@@ -32,11 +32,11 @@ MANAGED_ROLES = [
 ]
 
 USER_MAPPING = {
-    1086571236160708709: "FunwithBg",          # life4x
-    1157663612115107981: "Snipzy-AZ",          # .snipzy_ (discord), "Snipzy-AZ" (YouTube string)
-    1444845857701630094: "Jay",                # jiyansu
-    1458104862834167824: "Raccoon",            # zeki4life
-    1210942252264857673: "RINGTA EMPIRE"       # vsxwexe
+    1086571236160708709: "FunwithBg",
+    1157663612115107981: "Snipzy-AZ",
+    1444845857701630094: "Jay",
+    1458104862834167824: "Raccoon",
+    1210942252264857673: "RINGTA EMPIRE"
 }
 DISCORD_USERNAMES = {
     1086571236160708709: "life4x",
@@ -100,13 +100,14 @@ async def check_user_restoration(uid_str):
         return
     uid = int(uid_str)
     name = USER_MAPPING.get(uid)
-    if not name: 
+    if not name:
         print(f"[DEBUG] No name in USER_MAPPING for UID {uid}, skipping restoration.")
         return
     track_channel = bot.get_channel(VIDEO_TRACK_CHANNEL_ID)
     if not track_channel:
-        try: track_channel = await bot.fetch_channel(VIDEO_TRACK_CHANNEL_ID)
-        except: 
+        try:
+            track_channel = await bot.fetch_channel(VIDEO_TRACK_CHANNEL_ID)
+        except:
             print(f"[DEBUG] Could not fetch track_channel {VIDEO_TRACK_CHANNEL_ID} (restoration).")
             return
     deadline_utc = get_next_deadline()
@@ -116,12 +117,16 @@ async def check_user_restoration(uid_str):
     new_count = 0
     async for msg in track_channel.history(limit=1000, after=last_reset):
         content = ""
-        if msg.content: content += msg.content
+        if msg.content:
+            content += msg.content
         if msg.embeds:
             for embed in msg.embeds:
-                if embed.description: content += f" {embed.description}"
-                if embed.author and embed.author.name: content += f" {embed.author.name}"
-                if embed.title: content += f" {embed.title}"
+                if embed.description:
+                    content += f" {embed.description}"
+                if embed.author and embed.author.name:
+                    content += f" {embed.author.name}"
+                if embed.title:
+                    content += f" {embed.title}"
         pattern = rf"{re.escape(name)}\s+just\s+posted\s+a\s+new\s+video!"
         if re.search(pattern, content, re.IGNORECASE):
             new_count += 1
@@ -133,8 +138,9 @@ async def check_user_restoration(uid_str):
     if new_count >= data["missing"]:
         member = guild.get_member(uid)
         if not member:
-            try: member = await guild.fetch_member(uid)
-            except: 
+            try:
+                member = await guild.fetch_member(uid)
+            except:
                 print(f"[DEBUG] Could not fetch member {uid} (restoration).")
                 return
         roles_to_add = [guild.get_role(rid) for rid in data["roles"] if guild.get_role(rid)]
@@ -174,7 +180,8 @@ async def on_message(message):
                 content = message.content or ""
                 if message.embeds:
                     for embed in message.embeds:
-                        if embed.description: content += f" {embed.description}"
+                        if embed.description:
+                            content += f" {embed.description}"
                 if re.search(pattern, content, re.IGNORECASE):
                     await check_user_restoration(uid_str)
     await bot.process_commands(message)
@@ -192,19 +199,24 @@ async def run_demotion_check():
     logging.info(f"DEMOTION CHECK (YESTERDAY): from={period_start} to={period_end}")
     track_channel = bot.get_channel(VIDEO_TRACK_CHANNEL_ID)
     if not track_channel:
-        try: track_channel = await bot.fetch_channel(VIDEO_TRACK_CHANNEL_ID)
-        except: 
+        try:
+            track_channel = await bot.fetch_channel(VIDEO_TRACK_CHANNEL_ID)
+        except:
             logging.error(f"FAILED TO FIND TRACK CHANNEL: {VIDEO_TRACK_CHANNEL_ID}")
             return
     current_counts = {uid: 0 for uid in USER_MAPPING}
     async for msg in track_channel.history(limit=2000, after=period_start, before=period_end):
         content = ""
-        if msg.content: content += msg.content
+        if msg.content:
+            content += msg.content
         if msg.embeds:
             for embed in msg.embeds:
-                if embed.description: content += f" {embed.description}"
-                if embed.author and embed.author.name: content += f" {embed.author.name}"
-                if embed.title: content += f" {embed.title}"
+                if embed.description:
+                    content += f" {embed.description}"
+                if embed.author and embed.author.name:
+                    content += f" {embed.author.name}"
+                if embed.title:
+                    content += f" {embed.title}"
         for uid, name in USER_MAPPING.items():
             pattern = rf"{re.escape(name)}\s+just\s+posted\s+a\s+new\s+video!"
             if re.search(pattern, content, re.IGNORECASE):
@@ -226,7 +238,7 @@ async def run_demotion_check():
             member = guild.get_member(uid)
             print(f"[DEBUG] member for uid {uid}: {member}")
             if not member:
-                try: 
+                try:
                     member = await guild.fetch_member(uid)
                     print(f"[DEBUG] fetched member: {member}")
                 except Exception as e:
@@ -283,8 +295,10 @@ async def track_restoration_loop():
 async def reminder_loop():
     channel = bot.get_channel(REMINDER_CHANNEL_ID)
     if not channel:
-        try: channel = await bot.fetch_channel(REMINDER_CHANNEL_ID)
-        except: return
+        try:
+            channel = await bot.fetch_channel(REMINDER_CHANNEL_ID)
+        except:
+            return
     est_offset = timezone(timedelta(hours=-5))
     now_est = datetime.now(est_offset)
     today_str = now_est.strftime("%Y-%m-%d")
@@ -302,25 +316,31 @@ async def reminder_loop():
     period_start = deadline_utc - timedelta(days=1)
     track_channel = bot.get_channel(VIDEO_TRACK_CHANNEL_ID)
     if not track_channel:
-        try: track_channel = await bot.fetch_channel(VIDEO_TRACK_CHANNEL_ID)
-        except: return
+        try:
+            track_channel = await bot.fetch_channel(VIDEO_TRACK_CHANNEL_ID)
+        except:
+            return
     current_counts = {uid: 0 for uid in USER_MAPPING}
     async for msg in track_channel.history(limit=2000, after=period_start, before=now_utc):
         content = ""
-        if msg.content: content += msg.content
+        if msg.content:
+            content += msg.content
         if msg.embeds:
             for embed in msg.embeds:
-                if embed.description: content += f" {embed.description}"
-                if embed.author and embed.author.name: content += f" {embed.author.name}"
-                if embed.title: content += f" {embed.title}"
+                if embed.description:
+                    content += f" {embed.description}"
+                if embed.author and embed.author.name:
+                    content += f" {embed.author.name}"
+                if embed.title:
+                    content += f" {embed.title}"
         for uid, name in USER_MAPPING.items():
             pattern = rf"{re.escape(name)}\s+just\s+posted\s+a\s+new\s+video!"
             if re.search(pattern, content, re.IGNORECASE):
                 current_counts[uid] += 1
             elif msg.author.bot and name.lower() in content.lower():
                 if any(term in content.lower() for term in ["posted", "new video", "youtu.be", "youtube.com"]):
-                     if not re.search(pattern, content, re.IGNORECASE):
-                         current_counts[uid] += 1
+                    if not re.search(pattern, content, re.IGNORECASE):
+                        current_counts[uid] += 1
     yesterday_end_est = now_est.replace(hour=18, minute=0, second=0, microsecond=0)
     if now_est < yesterday_end_est:
         yesterday_end_est -= timedelta(days=1)
@@ -330,12 +350,16 @@ async def reminder_loop():
     yesterday_counts = {uid: 0 for uid in USER_MAPPING}
     async for msg in track_channel.history(limit=2000, after=yesterday_start, before=yesterday_end):
         content = ""
-        if msg.content: content += msg.content
+        if msg.content:
+            content += msg.content
         if msg.embeds:
             for embed in msg.embeds:
-                if embed.description: content += f" {embed.description}"
-                if embed.author and embed.author.name: content += f" {embed.author.name}"
-                if embed.title: content += f" {embed.title}"
+                if embed.description:
+                    content += f" {embed.description}"
+                if embed.author and embed.author.name:
+                    content += f" {embed.author.name}"
+                if embed.title:
+                    content += f" {embed.title}"
         for uid, name in USER_MAPPING.items():
             pattern = rf"{re.escape(name)}\s+just\s+posted\s+a\s+new\s+video!"
             if re.search(pattern, content, re.IGNORECASE):
